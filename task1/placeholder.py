@@ -5,12 +5,13 @@ import os
 from colorama import Fore, Style
 
 def evaluate_password(password):
-    score = 1
     hints =[]
 
     if re.search(r'[^a-zA-Z0-9]', password): #якщо присутні спец символи, то пароль недійсний, поки їх нема +1 бал який є з самого початку
-        score = 0
         hints.append("Помилка: у паролі присутні неприпустимі символи!")
+        return 0, hints
+
+    score = 1
         
     if len(password) >= 8: #довжина довше 8 символів
         score += 1
@@ -53,6 +54,12 @@ def read_password():
         char = msvcrt.getch()
         
         if char in {b"\r", b"\n"}:  # Enter
+            if any("Помилка" in hint for hint in hints):  # Якщо є помилка
+                print(Fore.RED + hints[0] + Style.RESET_ALL)
+                password = ""
+                msvcrt.getch()  # Очікуємо натискання клавіші перед очищенням екрану
+                continue  # Повертаємося на початок введення
+
             if score < 3:
                 print("Пароль занадто слабкий, спробуйте ще раз!")
                 password = ""
