@@ -5,14 +5,20 @@ import os
 from colorama import Fore, Style
 
 def evaluate_password(password):
-    hints =[]
+    hints = []
+
+    score = 0
+    
+    if not password:
+        #hints.append("ВВЕДІТЬ ПАРОЛЬ!!")
+        return score, hints
 
     if re.search(r'[^a-zA-Z0-9]', password): #якщо присутні спец символи, то пароль недійсний, поки їх нема +1 бал який є з самого початку
         hints.append("Помилка: у паролі присутні неприпустимі символи!")
-        return 0, hints
+        return score, hints
+    else:
+        score += 1
 
-    score = 1
-        
     if len(password) >= 8: #довжина довше 8 символів
         score += 1
     else:
@@ -33,7 +39,6 @@ def evaluate_password(password):
     else:
         hints.append("у паролі менше двох цифр")
     
-
     return score, hints
 
 def read_password():
@@ -41,8 +46,10 @@ def read_password():
     
     while True:
         os.system('cls' if os.name == 'nt' else 'clear') 
+
         score, hints = evaluate_password(password)
-        print(f"Пароль: {'*' * len(password)}") # print(f"Пароль: {password}") - щоб пароль показувався не зірочками, а введеними символами
+        
+        print(f"Пароль: {password}")  # print(f"Пароль: {'*' * len(password)}") # print(f"Пароль: {password}") - щоб пароль показувався не зірочками, а введеними символами
         print(f"Оцінка: {'*' * score}")
         
         if hints:
@@ -73,8 +80,13 @@ def read_password():
         elif char == b"\x08": 
             if password:
                 password = password[:-1]
-        else:
-            password += char.decode("utf-8")
+
+        elif char == b"\xe0":
+            msvcrt.getch()
+            continue
+
+        elif 32 <= ord(char) <= 126:
+            password += char.decode()  
     
     return password
 
