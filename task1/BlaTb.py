@@ -3,9 +3,11 @@ import msvcrt
 
 # Перевірка натискання клавіші "Esc"
 def check_escape_key():
+    print("Натисніть 'Esc' для повернення до головного меню.")
     if msvcrt.kbhit():  # Якщо натиснута клавіша
         char = msvcrt.getch()
         if char == b'\x1b':  # Якщо натиснуто 'Esc' (код клавіші Escape)
+            print("Повернення до головного меню...")
             return True
     return False
 
@@ -22,11 +24,10 @@ def evaluate_password():
         #password = input("Введіть пароль: ")
 
         
-        print("Натисніть 'Esc' для повернення до головного меню.")
+        
         if check_escape_key():
-            print("Повернення до головного меню...")
-            return  
-
+            return
+           
       
 
 # Функція для зміни пароля
@@ -40,10 +41,9 @@ def change_password():
         #new_password = input("Введіть новий пароль: ")
 
       
-        print("Натисніть 'Esc' для повернення до головного меню.")
-        if check_escape_key():
-            print("Повернення до головного меню...")
-            return  
+       
+        check_escape_key()
+       
 
     
 
@@ -56,10 +56,10 @@ def view_passwords():
 
 
 
-        print("Натисніть 'Esc' для повернення до головного меню.")
-        if check_escape_key():
-            print("Повернення до головного меню...")
-            return  
+       
+        check_escape_key()
+          
+          
 
 
 
@@ -73,12 +73,10 @@ def delete_user():
         #username = input("Введіть ім'я користувача для видалення: ")
 
 
-        print("Натисніть 'Esc' для повернення до головного меню.") 
+       
     
-        if check_escape_key():
-            print("Повернення до головного меню...")
-            return  
-
+        check_escape_key()
+       
       
 
 # Основне меню
