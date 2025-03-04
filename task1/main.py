@@ -2,7 +2,7 @@ import database
 import user_interaction
 import hashlib
 
-message = {
+message: dict[str, str] = {
     "WRONG_PASSWORD": "Невірний пароль.",
     "USER_DELETION_CONFIRM": "Ви дійсно хочете видалити даного користувача?\n(Esc - відмінити, Any Key - продовжити)",
     "USER_IS_TAKEN": "Ім'я користувача зайнято, спробуйте інше.",
@@ -12,80 +12,91 @@ message = {
     "EXIT": ""
 }
 
+def hash_sha256(string: str) -> str:
+    """SHA256 hash function str -> str, based on hashlib."""
+    return hashlib.sha256(string.encode()).hexdigest()
 
 # Функція для додавання пароля
-def add_user(db: database.Database):
-    username = ""
+def add_user(db: database.Database) -> None:
+    """Adds user to the database, asking unique username and password with evaluation."""
+    username: str = ""
     while True:
         try:
             username = user_interaction.read_username(starting_username = username)
         except user_interaction.Esc:
             return
         
-        unique = db.find("username", username) == -1
+        unique: bool = db.find("username", username) == -1
 
         if unique:
             break
 
         print(message["USER_IS_TAKEN"])
         user_interaction.getch()
-
+    
+    password: str = ""
     try:    
         password = user_interaction.read_password()
     except user_interaction.Esc:
         return
     
-    score = user_interaction.evaluate_password(password)[0]
+    score: int = user_interaction.evaluate_password(password)[0]
 
-    password = hashlib.sha256(password.encode()).hexdigest()
+    password = hash_sha256(password)
     
     db.add([username, password, score])
     db.save_csv()
 
 
 # Функція для зміни пароля
-def change_password(db: database.Database):
-    username = ""
+def change_password(db: database.Database) -> None:
+    """Changes user's password in database, asking username with password for confirmation and new password's evaluation."""
+    username: str = ""
     while True:
         try:
             username = user_interaction.read_username(starting_username = username)
         except user_interaction.Esc:
             return
         
-        unique = db.find("username", username) == -1
+        unique: bool = db.find("username", username) == -1
         
         if not unique:
             break
         
         print(message["USER_NOT_FOUND"])
         user_interaction.getch()
+    
+    password: str = ""
+    while True:
+        try:    
+            password = user_interaction.read_password(show_hints = False)
+        except user_interaction.Esc:
+            return
+        
+        password = hash_sha256(password)
+        index: int = db.find("username", username)
 
-    try:    
-        password = user_interaction.read_password(show_hints = False)
-    except user_interaction.Esc:
-        return
-    
-    password = hashlib.sha256(password.encode()).hexdigest()
-    index = db.find("username", username)
-    
-    if password != db[index].get("password"):
+        if password == db[index].get("password"):
+            break
+
         print(message["WRONG_PASSWORD"])
         user_interaction.getch()
-        return
 
     try:
         password = user_interaction.read_password()
     except user_interaction.Esc:
         return
 
-    score = user_interaction.evaluate_password(password)[0]
+    score: int = user_interaction.evaluate_password(password)[0]
+    password = hash_sha256(password)
 
     db.change(index, [username, password, score])
     db.save_csv()
 
 
 # Функція для перегляду користувачів
-def view_users(db: database.Database):
+def view_users(db: database.Database) -> None:
+    """Prints usernames and their password security scores from database."""
     user_interaction.clear()
     print(f"{message["USER_LIST"]:31}{message["SCORE_LIST"]}")
     for i in range(len(db)):
@@ -94,15 +105,16 @@ def view_users(db: database.Database):
 
 
 # Функція для видалення користувача
-def delete_user(db: database.Database):
-    username = ""
+def delete_user(db: database.Database) -> None:
+    """Deletes user from database, asking username with password for further confirmation."""
+    username: str = ""
     while True:
         try:
             username = user_interaction.read_username(starting_username = username)
         except user_interaction.Esc:
             return
         
-        unique = db.find("username", username) == -1
+        unique: bool = db.find("username", username) == -1
 
         if not unique:
             break
@@ -110,14 +122,15 @@ def delete_user(db: database.Database):
         print(message["USER_NOT_FOUND"])
         user_interaction.getch()
 
+    password: str = ""
     while True:
         try:    
             password = user_interaction.read_password(show_hints = False)
         except user_interaction.Esc:
             return
         
-        password = hashlib.sha256(password.encode()).hexdigest()
-        index = db.find("username", username)
+        password = hash_sha256(password)
+        index: int = db.find("username", username)
         
         if password == db[index].get("password"):
             break
@@ -134,17 +147,19 @@ def delete_user(db: database.Database):
 
 
 # Основне меню
-def main_menu(db: database.Database):
+def main_menu(db: database.Database) -> None:
+    """Main menu function for user's navigation through database. ESC for go back, exit."""
     while True:
         user_interaction.clear()
+        
         print("Менеджер паролів")
         print("1. Створити нового користувача")
         print("2. Змінити пароль користувача")
         print("3. Переглянути користувачів")
         print("4. Видалити користувача")
-        print("5. Вийти")
+        print("5. Вийти (ESC)")
 
-        char = user_interaction.getch()
+        char: bytes = user_interaction.getch()
 
         match char:
             case b'1':

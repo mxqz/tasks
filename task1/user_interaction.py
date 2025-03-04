@@ -8,18 +8,17 @@ class Esc(Exception):
         super().__init__("Escape Pressed")
 
 
-def clear():
+def clear() -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def getch():
+def getch() -> bytes:
     return msvcrt.getch()
 
 
-def evaluate_password(password):
-    hints = []
-
-    score = 0
+def evaluate_password(password: str) -> tuple[int, list[str]]:
+    hints: list[str] = []
+    score: int = 0
     
     if not password:
         # hints.append("ВВЕДІТЬ ПАРОЛЬ!!")
@@ -54,15 +53,15 @@ def evaluate_password(password):
     return score, hints
 
 
-def read_username(starting_username = ""):
-    username = starting_username
+def read_username(starting_username: str = "") -> str:
+    username: str = starting_username
 
     while True:
         clear()
 
         print(f"Ім'я користувача: {username}")
 
-        char = getch()
+        char: bytes = getch()
 
         if char == b"\r" or char == b"\n":  # Enter
             if not username:
@@ -90,12 +89,14 @@ def read_username(starting_username = ""):
     return username
     
 
-def read_password(show_password = False, show_hints = True):
-    password = ""
+def read_password(show_password: bool = False, show_hints: bool = True) -> str:
+    password: str = ""
     
     while True:
         clear()
         
+        score: int
+        hints: list[str]
         score, hints = evaluate_password(password)
         
         if show_password:
@@ -114,13 +115,11 @@ def read_password(show_password = False, show_hints = True):
                 # for hint in hints:
                 #     print(f"Підказка: {hint}")  
 
-        char = getch()
+        char: bytes = getch()
         
         if char == b"\r" or char == b"\n":  # Enter
             if any("Помилка" in hint for hint in hints) and show_hints:  # Якщо є помилка
-                print(Fore.RED + hints[0] + Style.RESET_ALL)
                 password = ""
-                getch()  # Очікуємо натискання клавіші перед очищенням екрану
                 continue  # Повертаємося на початок введення
 
             if score < 3 and show_hints:

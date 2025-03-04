@@ -20,7 +20,7 @@ class Database:
         return self._db.iloc[index]
 
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._db)
 
 
