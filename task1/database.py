@@ -20,6 +20,10 @@ class Database:
         return self._db.iloc[index]
 
 
+    def __len__(self):
+        return len(self._db)
+
+
     def get_column(self, column: str) -> list:
         try:
             return list(self._db[column])

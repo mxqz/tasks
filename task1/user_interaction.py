@@ -1,5 +1,4 @@
 import re
-import sys
 import msvcrt
 import os
 from colorama import Fore, Style
@@ -10,7 +9,11 @@ class Esc(Exception):
 
 
 def clear():
-    os.system('cls' if os.name == 'nt' else 'clear') 
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+def getch():
+    return msvcrt.getch()
 
 
 def evaluate_password(password):
@@ -51,15 +54,15 @@ def evaluate_password(password):
     return score, hints
 
 
-def read_username():
-    username = ""
+def read_username(starting_username = ""):
+    username = starting_username
 
     while True:
         clear()
 
         print(f"Ім'я користувача: {username}")
 
-        char = msvcrt.getch()
+        char = getch()
 
         if char == b"\r" or char == b"\n":  # Enter
             if not username:
@@ -74,7 +77,7 @@ def read_username():
                 username = username[:-1]
 
         elif char == b"\xe0":
-            msvcrt.getch()
+            getch()
             continue
 
         elif char == b"\x17":
@@ -87,12 +90,12 @@ def read_username():
     return username
     
 
-def read_password(show_password = False):
+def read_password(show_password = False, show_hints = True):
     password = ""
     
     while True:
         clear()
-
+        
         score, hints = evaluate_password(password)
         
         if show_password:
@@ -100,9 +103,10 @@ def read_password(show_password = False):
         else:
             print(f"Пароль: {'*' * len(password)}")
         
-        print(f"Оцінка: {'*' * score}")
+        if show_hints:    
+            print(f"Оцінка: {'*' * score}")
         
-        if hints:
+        if hints and show_hints:
             if "Помилка" in hints[0]:
                 print(Fore.RED + hints[0] + Style.RESET_ALL)
             else:
@@ -110,23 +114,24 @@ def read_password(show_password = False):
                 # for hint in hints:
                 #     print(f"Підказка: {hint}")  
 
-        char = msvcrt.getch()
+        char = getch()
         
         if char == b"\r" or char == b"\n":  # Enter
-            if any("Помилка" in hint for hint in hints):  # Якщо є помилка
+            if any("Помилка" in hint for hint in hints) and show_hints:  # Якщо є помилка
                 print(Fore.RED + hints[0] + Style.RESET_ALL)
                 password = ""
-                msvcrt.getch()  # Очікуємо натискання клавіші перед очищенням екрану
+                getch()  # Очікуємо натискання клавіші перед очищенням екрану
                 continue  # Повертаємося на початок введення
 
-            if score < 3:
+            if score < 3 and show_hints:
                 print("Пароль занадто слабкий, спробуйте ще раз!")
                 password = ""
-                msvcrt.getch()  # Очікуємо натискання клавіші перед очищенням екрану
+                getch()  # Очікуємо натискання клавіші перед очищенням екрану
                 continue  # Повертаємося на початок циклу для нового введення
             else:
-                print("\nПароль прийнято.")
-                msvcrt.getch()  # Очікуємо натискання клавіші перед очищенням екрану
+                if show_hints:
+                    print("\nПароль прийнято.")
+                    getch()  # Очікуємо натискання клавіші перед очищенням екрану
                 break
         
         elif char == b'\x1b':
@@ -137,7 +142,7 @@ def read_password(show_password = False):
                 password = password[:-1]
 
         elif char == b"\xe0":
-            msvcrt.getch()
+            getch()
             continue
 
         elif char == b"\x17":
