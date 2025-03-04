@@ -26,6 +26,9 @@ def evaluate_password(password: str) -> tuple[int, list[str]]:
     
     Returns:
         tuple[int, list[str]]: Password score (from 0 to 5) and a list of suggestions for improvement.
+        
+    Raises:
+        Esc: If the Escape key is pressed.
     """
     hints: list[str] = []
     score: int = 0
@@ -70,6 +73,9 @@ def read_username(starting_username: str = "") -> str:
     
     Returns:
         str: The entered username.
+        
+    Raises:
+        Esc: If the Escape key is pressed.
     """
     username: str = starting_username
 
@@ -108,6 +114,7 @@ def read_username(starting_username: str = "") -> str:
 
 def read_password(show_password: bool = False, show_hints: bool = True) -> str:
     """Prompts the user to enter a password and checks its strength.
+    
     
     Args:
         show_password (bool, optional): Whether to display the entered password. Defaults to False.
