@@ -4,48 +4,57 @@ import os
 from colorama import Fore, Style
 
 class Esc(Exception):
+    """Custom exception used to exit when Escape key is pressed."""
     def __init__(self):
         super().__init__("Escape Pressed")
 
 
 def clear() -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
-
+    """Simply clears the screen to remove extra text in the console."""
 
 def getch() -> bytes:
+    """Reads a single character from the keyboard without requiring Enter."""
     return msvcrt.getch()
 
 
 def evaluate_password(password: str) -> tuple[int, list[str]]:
+    """Checks the password and evaluates its strength.
+    
+    Args:
+        password (str): The password entered by the user.
+    
+    Returns:
+        tuple[int, list[str]]: Password score (from 0 to 5) and a list of suggestions for improvement.
+    """
     hints: list[str] = []
     score: int = 0
     
     if not password:
-        # hints.append("ВВЕДІТЬ ПАРОЛЬ!!")
         return score, hints
 
-    if re.search(r'[^a-zA-Z0-9]', password): #якщо присутні спец символи, то пароль недійсний, поки їх нема +1 бал який є з самого початку
+    if re.search(r'[^a-zA-Z0-9]', password): 
         hints.append("Помилка: у паролі присутні неприпустимі символи!")
         return score, hints
     else:
         score += 1
 
-    if len(password) >= 8: #довжина довше 8 символів
+    if len(password) >= 8: 
         score += 1
     else:
         hints.append("довжина паролю менше 8 символів")
 
-    if any(c.isupper() for c in password): # присутня хоча б одна велика літера
+    if any(c.isupper() for c in password): 
         score += 1
     else:
         hints.append("у паролі відсутні букви верхнього регістру")
 
-    if any(c.islower() for c in password): #присутня хоча б одна маленька літера
+    if any(c.islower() for c in password): 
         score += 1
     else:
         hints.append("у паролі відустні букви нижнього регістру")
 
-    if len(re.findall(r'\d', password)) >= 2: #цифр у паролі хоча б дві
+    if len(re.findall(r'\d', password)) >= 2: 
         score += 1
     else:
         hints.append("у паролі менше двох цифр")
@@ -54,6 +63,14 @@ def evaluate_password(password: str) -> tuple[int, list[str]]:
 
 
 def read_username(starting_username: str = "") -> str:
+    """Reads the username from the keyboard.
+    
+    Args:
+        starting_username (str, optional): Initial value if needed. Defaults to an empty string.
+    
+    Returns:
+        str: The entered username.
+    """
     username: str = starting_username
 
     while True:
@@ -63,7 +80,7 @@ def read_username(starting_username: str = "") -> str:
 
         char: bytes = getch()
 
-        if char == b"\r" or char == b"\n":  # Enter
+        if char == b"\r" or char == b"\n": 
             if not username:
                 continue
             break
@@ -90,6 +107,15 @@ def read_username(starting_username: str = "") -> str:
     
 
 def read_password(show_password: bool = False, show_hints: bool = True) -> str:
+    """Prompts the user to enter a password and checks its strength.
+    
+    Args:
+        show_password (bool, optional): Whether to display the entered password. Defaults to False.
+        show_hints (bool, optional): Whether to show password hints. Defaults to True.
+    
+    Returns:
+        str: The entered password.
+    """
     password: str = ""
     
     while True:
@@ -112,25 +138,23 @@ def read_password(show_password: bool = False, show_hints: bool = True) -> str:
                 print(Fore.RED + hints[0] + Style.RESET_ALL)
             else:
                 print(f"Підказка: {hints[0]}")  
-                # for hint in hints:
-                #     print(f"Підказка: {hint}")  
 
         char: bytes = getch()
         
         if char == b"\r" or char == b"\n":  # Enter
-            if any("Помилка" in hint for hint in hints) and show_hints:  # Якщо є помилка
+            if any("Помилка" in hint for hint in hints) and show_hints:  
                 password = ""
-                continue  # Повертаємося на початок введення
+                continue 
 
             if score < 3 and show_hints:
                 print("Пароль занадто слабкий, спробуйте ще раз!")
                 password = ""
-                getch()  # Очікуємо натискання клавіші перед очищенням екрану
-                continue  # Повертаємося на початок циклу для нового введення
+                getch()  
+                continue 
             else:
                 if show_hints:
                     print("\nПароль прийнято.")
-                    getch()  # Очікуємо натискання клавіші перед очищенням екрану
+                    getch() 
                 break
         
         elif char == b'\x1b':
