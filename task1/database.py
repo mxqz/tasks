@@ -25,7 +25,7 @@ class Database:
         """
         Returns a string representation of the database (CSV content as a table).
         """
-        return self._db.to_string(index=False)
+        return self._db.to_string(index = False)
 
     def __getitem__(self, index: int) -> pd.Series:
         """
@@ -128,7 +128,7 @@ class Database:
         if back:
             index = len(self._db)        
         self._db.loc[index] = row
-        self._db = self._db.sort_index().reset_index(drop=True)
+        self._db = self._db.sort_index().reset_index(drop = True)
     
     def remove(self, index: int) -> None:
         """

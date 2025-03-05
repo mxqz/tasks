@@ -13,12 +13,23 @@ message: dict[str, str] = {
 }
 
 def hash_sha256(string: str) -> str:
-    """SHA256 hash function str -> str, based on hashlib."""
+    """SHA256 hash function str -> str, based on hashlib.
+    
+    Args:
+        string (str): string to hash.
+    
+    Returns:
+        str: hashed in SHA256 string.
+    """
     return hashlib.sha256(string.encode()).hexdigest()
 
 # Функція для додавання пароля
 def add_user(db: database.Database) -> None:
-    """Adds user to the database, asking unique username and password with evaluation."""
+    """Adds user to the database, asking unique username and password with evaluation.
+    
+    Args:
+        db (database.Database): Database object to work with.
+    """
     username: str = ""
     while True:
         try:
@@ -50,7 +61,11 @@ def add_user(db: database.Database) -> None:
 
 # Функція для зміни пароля
 def change_password(db: database.Database) -> None:
-    """Changes user's password in database, asking username with password for confirmation and new password's evaluation."""
+    """Changes user's password in database, asking username with password for confirmation and new password's evaluation.
+    
+    Args:
+        db (database.Database): Database object to work with.
+    """
     username: str = ""
     while True:
         try:
@@ -96,7 +111,11 @@ def change_password(db: database.Database) -> None:
 
 # Функція для перегляду користувачів
 def view_users(db: database.Database) -> None:
-    """Prints usernames and their password security scores from database."""
+    """Prints usernames and their password security scores from database.
+    
+    Args:
+        db (database.Database): Database object to work with.
+    """
     user_interaction.clear()
     print(f"{message["USER_LIST"]:31}{message["SCORE_LIST"]}")
     for i in range(len(db)):
@@ -106,7 +125,11 @@ def view_users(db: database.Database) -> None:
 
 # Функція для видалення користувача
 def delete_user(db: database.Database) -> None:
-    """Deletes user from database, asking username with password for further confirmation."""
+    """Deletes user from database, asking username with password for further confirmation.
+    
+    Args:
+        db (database.Database): Database object to work with.
+    """
     username: str = ""
     while True:
         try:
@@ -148,7 +171,11 @@ def delete_user(db: database.Database) -> None:
 
 # Основне меню
 def main_menu(db: database.Database) -> None:
-    """Main menu function for user's navigation through database. ESC for go back, exit."""
+    """Main menu function for user's navigation through database. ESC for go back, exit.
+    
+    Args:
+        db (database.Database): Database object to work with.
+    """
     while True:
         user_interaction.clear()
         
