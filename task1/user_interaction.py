@@ -10,8 +10,8 @@ class Esc(Exception):
 
 
 def clear() -> None:
-    os.system('cls' if os.name == 'nt' else 'clear')
     """Simply clears the screen to remove extra text in the console."""
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def getch() -> bytes:
     """Reads a single character from the keyboard without requiring Enter."""
@@ -107,6 +107,8 @@ def read_username(starting_username: str = "") -> str:
             continue
 
         elif 32 <= ord(char) <= 126:
+            if re.search(r'[^a-zA-Z0-9]', str(char.decode())):
+                continue
             username += char.decode()
     
     return username

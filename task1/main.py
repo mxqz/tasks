@@ -23,7 +23,6 @@ def hash_sha256(string: str) -> str:
     """
     return hashlib.sha256(string.encode()).hexdigest()
 
-# Функція для додавання пароля
 def add_user(db: database.Database) -> None:
     """Adds user to the database, asking unique username and password with evaluation.
     
@@ -59,7 +58,6 @@ def add_user(db: database.Database) -> None:
     db.save_csv()
 
 
-# Функція для зміни пароля
 def change_password(db: database.Database) -> None:
     """Changes user's password in database, asking username with password for confirmation and new password's evaluation.
     
@@ -109,7 +107,6 @@ def change_password(db: database.Database) -> None:
     db.save_csv()
 
 
-# Функція для перегляду користувачів
 def view_users(db: database.Database) -> None:
     """Prints usernames and their password security scores from database.
     
@@ -123,7 +120,6 @@ def view_users(db: database.Database) -> None:
     user_interaction.getch()
 
 
-# Функція для видалення користувача
 def delete_user(db: database.Database) -> None:
     """Deletes user from database, asking username with password for further confirmation.
     
@@ -169,7 +165,6 @@ def delete_user(db: database.Database) -> None:
     db.save_csv()
 
 
-# Основне меню
 def main_menu(db: database.Database) -> None:
     """Main menu function for user's navigation through database. ESC for go back, exit.
     
