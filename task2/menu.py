@@ -7,10 +7,10 @@ import json
 class CryptoExchangeGUI(QMainWindow):
     def __init__(self, df):
         super().__init__()
-        self.locals = json.load(open("config\\en.json", "r"))
         self.data = df
+        self.locals = json.load(open("config\\en.json", "r"))
         
-        self.setWindowTitle("Bank Exchange Rate Chart")
+        self.setWindowTitle(locals["window"])
         self.setGeometry(100, 100, 800, 600)
 
         self.darkTheme = True  # By default, use dark theme
@@ -26,6 +26,7 @@ class CryptoExchangeGUI(QMainWindow):
 
         self.comboBank = QComboBox()
         self.comboBank.addItems(sorted(self.data["bank"].unique()))
+        self.comboBank.setObjectName("comboBank")
         self.comboBank.setStyleSheet("font-size: 14px; border: 2px solid white; border-radius: 5px; padding: 5px;")
         self.comboBank.currentIndexChanged.connect(self.updateSelectionCurrency)
         self.leftPanel.addWidget(QLabel(self.locals["choose"]["bank"]))

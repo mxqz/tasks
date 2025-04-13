@@ -1,4 +1,5 @@
 {
+    "window": "Bank Exchange Rate Chart",
     "choose": {
         "bank": "Choose bank: ",
         "currency": "Choose currency: "

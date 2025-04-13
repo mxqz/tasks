@@ -1,0 +1,14 @@
+QWidget {
+
+}
+
+#comboBank {
+    font-size: 14px; 
+    border: 2px solid white; 
+    border-radius: 5px; 
+    padding: 5px;
+}
+
+QDateEdit {
+    
+}
