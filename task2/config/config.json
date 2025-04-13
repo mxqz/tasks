@@ -1,0 +1,9 @@
+{
+    "df_columns": [
+        "bank",
+        "date",
+        "currency",
+        "rate_buy",
+        "rate_sell"
+    ]
+}

@@ -1,0 +1,22 @@
+{
+    "choose": {
+        "bank": "Choose bank: ",
+        "currency": "Choose currency: "
+    },
+    "date": {
+        "start": "Start Date",
+        "end": "End Date"
+    },
+    "theme": {
+        "dark": "Switch to Dark Theme",
+        "light": "Switch to Light Theme"
+    },
+    "exchange": "Exchange Rate {}",
+    "update": "Update Chart",
+    "reset": "Reset",
+    "plot": {
+        "title": "{} Exchange Rate",
+        "side": "",
+        "bottom": "Days"
+    }
+}
