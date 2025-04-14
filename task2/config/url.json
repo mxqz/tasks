@@ -1,0 +1,5 @@
+{
+    "bank": "https://bank.gov.ua/NBU_Exchange/exchange_site?start={}&end={}&json",
+    "monobank": "https://api.monobank.ua/bank/currency",
+    "privatbank": "https://api.privatbank.ua/p24api/exchange_rates?json&date={}"
+}

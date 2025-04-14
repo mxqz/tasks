@@ -18,6 +18,10 @@
     "plot": {
         "title": "{} Exchange Rate",
         "side": "",
-        "bottom": "Days"
+        "bottom": "Days",
+        "legend": {
+            "buy": "Buy",
+            "sell": "Sell"
+        }
     }
 }
