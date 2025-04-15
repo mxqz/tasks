@@ -1,9 +1,27 @@
 {
-    "df_columns": [
-        "bank",
-        "date",
-        "currency",
-        "rate_buy",
-        "rate_sell"
-    ]
+    "selected_lang": "en",
+    "available_lang": [
+        "en",
+        "ua"
+    ],
+    "plot": {
+        "dark": {
+            "background-color": "#000000",
+            "color": "#ffffff"
+        },
+        "light": {
+            "background-color": "#ffffff",
+            "color": "#000000"
+        },
+        "symbol": {
+            "": "o",
+            "trend": null,
+            "pen": null
+        },
+        "color": {
+            "buy": "#8cd177",
+            "sell": "#eb6363",
+            "trend": "#808080"
+        }
+    }
 }

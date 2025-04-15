@@ -1,0 +1,36 @@
+{
+    "window": "Bank Exchange Rate Chart",
+    "choose": {
+        "bank": "Choose bank: ",
+        "currency": "Choose currency: "
+    },
+    "date": {
+        "start": "Start Date",
+        "end": "End Date"
+    },
+    "theme": {
+        "dark": "Switch to Light Theme",
+        "light": "Switch to Dark Theme"
+    },
+    "trend": {
+        "shown": "Hide Trend",
+        "hidden": "Show Trend"
+    },
+    "exchange": "Exchange Rate {}",
+    "request": "Request for Data",
+    "clear": "Clear Storaged Data",
+    "lang": {
+        "en": "English",
+        "ua": "Ukrainian"
+    },
+    "plot": {
+        "title": "{} Exchange Rate",
+        "side": "",
+        "bottom": "Days",
+        "legend": {
+            "buy": "Buy",
+            "sell": "Sell",
+            "trend": "Trend"
+        }
+    }
+}
