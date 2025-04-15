@@ -3,6 +3,8 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout,
 from PyQt6.QtCore import QDate
 import pyqtgraph as pg
 import random
+import os
+
 
 
 class CryptoExchangeGUI(QMainWindow):
@@ -11,27 +13,24 @@ class CryptoExchangeGUI(QMainWindow):
         self.setWindowTitle("Bank Exchange Rate Chart")
         self.setGeometry(100, 100, 800, 600)
 
-        self.dark_theme = True  # By default, use dark theme
-
-        self.setStyleSheet("background-color: black; color: white;")  # Dark theme by default
+        self.dark_theme = True  
+        self.load_stylesheet("dark")  
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
-        self.main_layout = QHBoxLayout(self.central_widget)  # <-- головне компонування горизонтальне
+        self.main_layout = QHBoxLayout(self.central_widget)  # Main horizontal layout
 
         # Left panel for controls
         self.left_panel = QVBoxLayout()
 
         self.bank_combo = QComboBox()
         self.bank_combo.addItems(["PrivatBank", "Monobank", "Abank", "Average banks"])
-        self.bank_combo.setStyleSheet("font-size: 14px; border: 2px solid white; border-radius: 5px; padding: 5px;")
         self.bank_combo.currentIndexChanged.connect(self.update_chart)
         self.left_panel.addWidget(QLabel("Choose bank:"))
         self.left_panel.addWidget(self.bank_combo)
 
         self.currency_combo = QComboBox()
         self.currency_combo.addItems(["USD", "EUR", "PLN"])
-        self.currency_combo.setStyleSheet("font-size: 14px; border: 2px solid white; border-radius: 5px; padding: 5px;")
         self.currency_combo.currentIndexChanged.connect(self.update_chart)
         self.left_panel.addWidget(QLabel("Choose currency:"))
         self.left_panel.addWidget(self.currency_combo)
@@ -51,161 +50,55 @@ class CryptoExchangeGUI(QMainWindow):
 
         self.update_button = QPushButton("Update Chart")
         self.update_button.clicked.connect(self.update_chart)
-        self.update_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white; 
-                border-radius: 5px; 
-                padding: 5px;
-                background-color: #333; 
-                color: white;
-            }
-            QPushButton:hover {
-                background-color: #555;
-            }
-        """)
         self.update_button.setFixedSize(120, 35)
         self.left_panel.addWidget(self.update_button)
 
         self.reset_button = QPushButton("Reset")
         self.reset_button.clicked.connect(self.reset_filters)
-        self.reset_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white; 
-                border-radius: 5px; 
-                padding: 5px;
-                background-color: #900; 
-                color: white;
-            }
-            QPushButton:hover {
-                background-color: #c00;
-            }
-        """)
         self.reset_button.setFixedSize(120, 35)
         self.left_panel.addWidget(self.reset_button)
 
-        self.left_panel.addStretch()  # Для вирівнювання елементів вгору
+        self.left_panel.addStretch()  # Align elements to the top
         self.main_layout.addLayout(self.left_panel)
 
         # Right panel for plot
         self.plot_widget = pg.PlotWidget()
         self.plot_widget.setBackground('black')
-        self.plot_widget.setStyleSheet("border: 2px solid white;")
         self.plot_widget.showGrid(x=True, y=True)
         self.main_layout.addWidget(self.plot_widget)
 
         # Theme toggle button
         self.theme_button = QPushButton("Switch to Light Theme")
         self.theme_button.clicked.connect(self.toggle_theme)
-        self.theme_button.setStyleSheet("""
-            QPushButton {
-                border: 2px solid white;
-                border-radius: 5px;
-                padding: 5px;
-                background-color: #333;
-                color: white;
-            }
-            QPushButton:hover {
-                background-color: #555;
-            }
-        """)
+        self.theme_button.setFixedSize(150, 35)
         self.left_panel.addWidget(self.theme_button)
 
-        # Variable to hold the text item (used to show value on hover)
-        self.text_item = None
-
         self.plot_graph()
+        
+    def load_stylesheet(self, theme_name):
+    # Оновлений шлях з абсолютним шляхом до файлів стилю
+        path = f"config/themes/{theme_name}.qss"  # Повний шлях до файлів стилю
+        try:
+            with open(path, "r") as file:
+                stylesheet = file.read()
+                self.setStyleSheet(stylesheet)
+        except FileNotFoundError:
+            print(f"Error: The stylesheet '{path}' was not found.")
 
+    
     def toggle_theme(self):
         if self.dark_theme:
-            self.setStyleSheet("""
-                background-color: #f0f0f0; 
-                color: black;
-            """)
-            self.plot_widget.setBackground('#ffffff')
+            self.load_stylesheet("light")
+            self.plot_widget.setBackground('white')
             self.theme_button.setText("Switch to Dark Theme")
-            self.update_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid black;
-                    border-radius: 5px;
-                    padding: 5px;
-                    background-color: #ccc;
-                    color: black;
-                }
-                QPushButton:hover {
-                    background-color: #bbb;
-                }
-            """)
-            self.reset_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid black;
-                    border-radius: 5px;
-                    padding: 5px;
-                    background-color: #e94e77;
-                    color: black;
-                }
-                QPushButton:hover {
-                    background-color: #d42f60;
-                }
-            """)
-            self.theme_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid black;
-                    border-radius: 5px;
-                    padding: 5px;
-                    background-color: #ccc;
-                    color: black;
-                }
-                QPushButton:hover {
-                    background-color: #bbb;
-                }
-            """)
         else:
-            self.setStyleSheet("""
-                background-color: black;
-                color: white;
-            """)
+            self.load_stylesheet("dark")
             self.plot_widget.setBackground('black')
             self.theme_button.setText("Switch to Light Theme")
-            self.update_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 5px;
-                    padding: 5px;
-                    background-color: #333;
-                    color: white;
-                }
-                QPushButton:hover {
-                    background-color: #555;
-                }
-            """)
-            self.reset_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 5px;
-                    padding: 5px;
-                    background-color: #900;
-                    color: white;
-                }
-                QPushButton:hover {
-                    background-color: #c00;
-                }
-            """)
-            self.theme_button.setStyleSheet("""
-                QPushButton {
-                    border: 2px solid white;
-                    border-radius: 5px;
-                    padding: 5px;
-                    background-color: #333;
-                    color: white;
-                }
-                QPushButton:hover {
-                    background-color: #555;
-                }
-            """)
 
         self.dark_theme = not self.dark_theme
-        self.plot_graph()  # Re-draw the chart with the new theme
-
+        self.plot_graph()
+     
     def plot_graph(self):
         self.plot_widget.clear()
 
@@ -242,7 +135,7 @@ class CryptoExchangeGUI(QMainWindow):
         self.plot_widget.plot(list(range(len(labels))), rates,
                               pen=pg.mkPen(color=color, width=2),
                               symbol='o', name=selected_bank)
-        
+
         selected_currency = self.currency_combo.currentText()
         if selected_currency == "USD":
             self.plot_widget.setLabel("left", "Exchange Rate (USD)", color='r')
@@ -253,6 +146,7 @@ class CryptoExchangeGUI(QMainWindow):
         else:
             self.plot_widget.setLabel("left", "Exchange Rate (Not found)", color='r')
             return
+
         self.plot_widget.setTitle("Exchange Rate Over Time", color='r')
         self.plot_widget.setLabel("bottom", "Days", color='r')
         self.plot_widget.getPlotItem().getAxis('bottom').setTicks([list(enumerate(labels))])
