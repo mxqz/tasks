@@ -140,7 +140,7 @@ def request_csv_reading(path: str) -> pd.DataFrame:
         data["bank"] = data["bank"].apply(lambda name: layout.bank_names.get(name, None))
         data["currency"] = data["currency"].apply(lambda code: layout.currency_names.get(code, None))
     except:
-        request_csv_clear(path)
+        request_csv_and_jsons_clear(path)
 
     data.dropna(inplace=True)
     data.sort_values(by=["bank", "date"], inplace=True)
@@ -202,10 +202,17 @@ def request_external_csv_update(start: datetime, end: datetime, path_to: str, pa
     data = request_csv_reading(path_to)
 
 
-def request_csv_clear(path: str) -> None:
+domains = ["bank", "monobank", "privatbank"]
+
+
+def request_csv_and_jsons_clear(path: str) -> None:
     if not os.path.exists(path):
         return
-    line = [column + "," for column in df_columns]
-    line[-1] = "\n"
+    
+    for domain in domains:
+        open(f"exchange_rates\\{domain}.json", "w").close()
+    
+    line = ",".join(df_columns) + "\n"
+    
     with open(path, "w") as file:
         file.write(line)

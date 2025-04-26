@@ -231,6 +231,6 @@ class CryptoExchangeGUI(QMainWindow):
     
 
     def clearData(self):
-        api.request_csv_clear(layout.raw_data)
+        api.request_csv_and_jsons_clear(layout.raw_data)
         api.data = api.request_csv_reading(layout.raw_data)
         self.updateChart()
