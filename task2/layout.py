@@ -1,5 +1,8 @@
 import json
 
+raw_data = "csv\\raw_data.csv"
+raw_exchange_rates = "exchange_rates\\"
+stylesheet = "config\\themes\\{}.qss"
 config = json.load(open("config\\config.json", "r"))
 languages = config["available_lang"]
 lang = config["selected_lang"]

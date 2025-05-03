@@ -92,10 +92,14 @@ class CryptoExchangeGUI(QMainWindow):
         return "dark" if self.darkTheme else "light"
 
 
+    def getTrendString(self):
+        return "shown" if self.showTrend else "hidden"
+
+
     def toggleTheme(self):
         self.darkTheme = not self.darkTheme
         theme = self.getThemeString()
-        styleSheet = open(f"config\\themes\\{theme}.qss").read()
+        styleSheet = open(layout.stylesheet.format(theme)).read()
         self.setStyleSheet(styleSheet)
         self.plotWidget.setBackground(layout.config["plot"][theme]["background-color"])
         self.buttonTheme.setText(layout.locals["theme"][theme])
@@ -103,7 +107,7 @@ class CryptoExchangeGUI(QMainWindow):
 
     def toggleTrend(self):
         self.showTrend = not self.showTrend
-        mode = "shown" if self.showTrend else "hidden"
+        mode = self.getTrendString()
         self.buttonTrend.setText(layout.locals["trend"][mode])
         self.updatePlot()
 
@@ -193,6 +197,9 @@ class CryptoExchangeGUI(QMainWindow):
 
 
     def updateLocals(self):
+        self.setWindowTitle(layout.locals["window"])
+        theme = self.getThemeString()
+        mode = self.getTrendString()
         selected_index = self.comboLang.currentIndex()
         if selected_index != -1:
             layout.set_localization(self.comboLang.currentData())
@@ -208,7 +215,9 @@ class CryptoExchangeGUI(QMainWindow):
         self.labelDateEnd.setText(layout.locals["date"]["end"])
         self.requestButton.setText(layout.locals["request"])
         self.clearButton.setText(layout.locals["clear"])
-        api.data = api.request_csv_reading("csv\\raw_data.csv")
+        self.buttonTheme.setText(layout.locals["theme"][theme])
+        self.buttonTrend.setText(layout.locals["trend"][mode])
+        api.data = api.request_csv_reading(layout.raw_data)
         self.updateChart()
         
 
@@ -216,12 +225,12 @@ class CryptoExchangeGUI(QMainWindow):
     def requestData(self):
         start = self.pickerDateStart.date().toPyDate()
         end = self.pickerDateEnd.date().toPyDate()
-        api.request_external_csv_update(start, end, "csv\\raw_data.csv")
-        api.data = api.request_csv_reading("csv\\raw_data.csv")
+        api.request_external_csv_update(start, end, layout.raw_data, layout.raw_exchange_rates)
+        api.data = api.request_csv_reading(layout.raw_data)
         self.updateChart()
     
 
     def clearData(self):
-        api.request_csv_clear("csv\\raw_data.csv")
-        api.data = api.request_csv_reading("csv\\raw_data.csv")
+        api.request_csv_and_jsons_clear(layout.raw_data)
+        api.data = api.request_csv_reading(layout.raw_data)
         self.updateChart()
