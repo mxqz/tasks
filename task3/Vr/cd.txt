@@ -1,0 +1,11 @@
+read> a         
+read> b         
++ a b t1        
+- a b t2        
+* a b t3        
+/ a b t4        
+= t1 sum        
+write> sum      
+write> t2       
+write> t3       
+write> t4   
