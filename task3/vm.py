@@ -1,58 +1,112 @@
-class StackVM:
-    def __init__(self):
-        self.stack = []
-        self.vars = {}
+import sys
+import re
 
-    def get_value(self, operand: str):
-        if operand.isnumeric():
-            return int(operand)
-        if operand in self.vars:
-            return self.stack[self.vars[operand]]
+memory = {}
+
+VAR_PATTERN = re.compile(r'^(?:[a-zA-Z]+|t\d+)$')
+FLOAT_PATTERN = re.compile(r'^-?(\d+\.?\d*|\.\d+)$')
+
+def is_variable(s: str):
+    return bool(VAR_PATTERN.fullmatch(s))
+
+def is_number(s: str):
+    return bool(FLOAT_PATTERN.fullmatch(s))
+
+def get_value(s: str):
+    if is_number(s):
+        return float(s)
+    elif is_variable(s):
+        if s in memory:
+            return memory[s]
         else:
-            raise ValueError(f"No variable {operand} declared")
+            print(f"Помилка: змінна '{s}' не ініціалізована.")
+            sys.exit(1)
+    else:
+        print(f"Синтаксична помилка: некоректний операнд '{s}'")
+        sys.exit(1)
 
-    def execute(self, instruction):
-        parts = instruction.split()
-        op = parts[0]
-        target = parts[len(parts) - 1]
+def execute(line: str):
+    line = line.strip()
+    if not line:
+        return
 
-        operands = parts[1:-1]
+    tokens = line.split()
+    command = tokens[0].upper()
 
-        if op == "COPY":
-            result = self.get_value(operands[0])
-        elif op == "ADD":
-            result = self.get_value(operands[0]) + self.get_value(operands[1])
-        elif op == "SUB":
-            result = self.get_value(operands[0]) - self.get_value(operands[1])
-        elif op == "MUL":
-            result = self.get_value(operands[0]) * self.get_value(operands[1])
-        elif op == "DIV":
-            result = self.get_value(operands[0]) / self.get_value(operands[1])
-        else:
-            raise ValueError(f"Unknown operation: {op}")
+    match command:
+        case "READ":
+            if len(tokens) != 2 or not is_variable(tokens[1]):
+                print(f"Синтаксична помилка в команді '{command}'")
+                sys.exit(1)
+            var = tokens[1]
+            print(f"{var} = ", end="")
+            val = str(input())
+            if not is_number(val):
+                print("Помилка: очікувалось число")
+                sys.exit(1)
+            memory[var] = float(val)
 
-        if not target in self.vars and str(target).isalpha():
-            self.vars[target] = len(self.stack)
-            self.stack.append(result)
-        else:
-            self.stack[self.vars[target]] = result
+        case "WRITE":
+            if len(tokens) != 2 or not is_variable(tokens[1]):
+                print(f"Синтаксична помилка в команді '{command}'")
+                sys.exit(1)
+            var = tokens[1]
+            if var not in memory:
+                print(f"Помилка: змінна '{var}' не знайдена")
+                sys.exit(1)
+            print(f"{var} = {memory[var]}")
+            # print(memory[var])
 
-    def run(self, program):
-        for instr in program:
-            self.execute(instr)
-            # self.dump_vars()
-            self.dump_stack()
+        case "COPY":
+            if len(tokens) != 3:
+                print(f"Синтаксична помилка в команді '{command}'")
+                sys.exit(1)
+            src, dst = tokens[1], tokens[2]
+            if not is_variable(dst):
+                print("Помилка: недопустиме імʼя змінної")
+                sys.exit(1)
+            memory[dst] = get_value(src)
 
-    def dump_vars(self):
-        for var, val in self.vars.items():
-            print(f"{var} = {val}")
+        case  "ADD" | "SUB" | "MUL" | "DIV":
+            if len(tokens) != 4:
+                print(f"Синтаксична помилка в арифметичній операції '{command}'")
+                sys.exit(1)
+            _, left, right, dst = tokens
+            if not is_variable(dst):
+                print("Помилка: результат має бути збережений у змінну")
+                sys.exit(1) 
 
-    def dump_stack(self):
-        print("Stack:", self.stack)
+            lval = get_value(left)
+            rval = get_value(right)
 
+            if command == 'ADD':
+                memory[dst] = lval + rval
+            elif command == 'SUB':
+                memory[dst] = lval - rval
+            elif command == 'MUL':
+                memory[dst] = lval * rval
+            elif command == 'DIV':
+                if rval == 0:
+                    print("Помилка: ділення на нуль")
+                    sys.exit(1)
+                memory[dst] = lval / rval
 
-program = open("raw.txt", "r").readlines()
+        case _:
+            print(f"Синтаксична помилка: невідома команда '{tokens[0]}'")
+            sys.exit(1)
 
+def run(filename: str):
+    try:
+        with open(filename, 'r') as file:
+            for line_num, line in enumerate(file, start=1):
+                try:
+                    execute(line)
+                except SystemExit:
+                    print(f"(рядок {line_num})")
+                    sys.exit(1)
+    except FileNotFoundError:
+        print(f"Помилка: файл '{filename}' не знайдено.")
+        sys.exit(1)
 
-vm = StackVM()
-vm.run(program)
+if __name__ == "__main__":
+    run("Vr/cd.txt")
