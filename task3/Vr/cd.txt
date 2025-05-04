@@ -1,11 +1,11 @@
-READ> a
-READ> b
+READ a
+READ b
 ADD a b t1
 SUB a b t2
 MUL a b t3
 DIV a b t4
 COPY t1 sum
-WRITE> sum
-WRITE> t2
-WRITE> t3
-WRITE> t4
+WRITE sum
+WRITE t2
+WRITE t3
+WRITE t4
