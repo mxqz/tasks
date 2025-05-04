@@ -1,0 +1,4 @@
+SUB 10 5 a
+MUL a 2 b
+COPY 0 a
+COPY 0 b
