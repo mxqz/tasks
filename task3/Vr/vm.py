@@ -26,17 +26,17 @@ def get_value(s):
         print(f"Синтаксична помилка: некоректний операнд '{s}'")
         sys.exit(1)
 
-
 def execute(line):
     line = line.strip()
     if not line:
         return  # Порожній рядок
 
     tokens = line.split()
+    command = tokens[0].upper()
 
-    if line.startswith("read>"):
+    if command == "READ>":
         if len(tokens) != 2 or not is_variable(tokens[1]):
-            print("Синтаксична помилка в команді 'read>'")
+            print("Синтаксична помилка в команді 'READ>'")
             sys.exit(1)
         var = tokens[1]
         val = input(f"{var} = ")
@@ -45,9 +45,9 @@ def execute(line):
             sys.exit(1)
         memory[var] = float(val)
 
-    elif line.startswith("write>"):
+    elif command == "WRITE>":
         if len(tokens) != 2 or not is_variable(tokens[1]):
-            print("Синтаксична помилка в команді 'write>'")
+            print("Синтаксична помилка в команді 'WRITE>'")
             sys.exit(1)
         var = tokens[1]
         if var not in memory:
@@ -55,9 +55,9 @@ def execute(line):
             sys.exit(1)
         print(memory[var])
 
-    elif tokens[0] == '=':
+    elif command == "COPY":
         if len(tokens) != 3:
-            print("Синтаксична помилка в команді присвоєння '='")
+            print("Синтаксична помилка в команді 'COPY'")
             sys.exit(1)
         src, dst = tokens[1], tokens[2]
         if not is_variable(dst):
@@ -65,11 +65,11 @@ def execute(line):
             sys.exit(1)
         memory[dst] = get_value(src)
 
-    elif tokens[0] in ['+', '-', '*', '/']:
+    elif command in ['ADD', 'SUB', 'MUL', 'DIV']:
         if len(tokens) != 4:
-            print(f"Синтаксична помилка в арифметичній операції '{tokens[0]}'")
+            print(f"Синтаксична помилка в арифметичній операції '{command}'")
             sys.exit(1)
-        op, left, right, dst = tokens
+        _, left, right, dst = tokens
         if not is_variable(dst):
             print("Помилка: результат має бути збережений у змінну")
             sys.exit(1)
@@ -77,13 +77,13 @@ def execute(line):
         lval = get_value(left)
         rval = get_value(right)
 
-        if op == '+':
+        if command == 'ADD':
             memory[dst] = lval + rval
-        elif op == '-':
+        elif command == 'SUB':
             memory[dst] = lval - rval
-        elif op == '*':
+        elif command == 'MUL':
             memory[dst] = lval * rval
-        elif op == '/':
+        elif command == 'DIV':
             if rval == 0:
                 print("Помилка: ділення на нуль")
                 sys.exit(1)
@@ -108,4 +108,3 @@ def run(filename):
 
 if __name__ == "__main__":
     run("cd.txt")
-
