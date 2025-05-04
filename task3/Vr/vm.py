@@ -3,16 +3,16 @@ import re
 
 memory = {}
 
-VAR_PATTERN = re.compile(r'^[a-zA-Z]+$')
-FLOAT_PATTERN = re.compile(r'^-?\d+(\.\d+)?$')
+VAR_PATTERN = re.compile(r'^(?:[a-zA-Z]+|t\d+)$')
+FLOAT_PATTERN = re.compile(r'^-?(\d+\.?\d*|\.\d+)$')
 
-def is_variable(s):
+def is_variable(s: str):
     return bool(VAR_PATTERN.fullmatch(s))
 
-def is_number(s):
+def is_number(s: str):
     return bool(FLOAT_PATTERN.fullmatch(s))
 
-def get_value(s):
+def get_value(s: str):
     if is_number(s):
         return float(s)
     elif is_variable(s):
@@ -25,7 +25,7 @@ def get_value(s):
         print(f"Синтаксична помилка: некоректний операнд '{s}'")
         sys.exit(1)
 
-def execute(line):
+def execute(line: str):
     line = line.strip()
     if not line:
         return
@@ -39,13 +39,14 @@ def execute(line):
                 print(f"Синтаксична помилка в команді '{command}'")
                 sys.exit(1)
             var = tokens[1]
-            val = input(f"{var} = ")
+            print(f"{var} = ", end="")
+            val = str(input())
             if not is_number(val):
                 print("Помилка: очікувалось число")
                 sys.exit(1)
             memory[var] = float(val)
 
-        case "WRITE>":
+        case "WRITE":
             if len(tokens) != 2 or not is_variable(tokens[1]):
                 print(f"Синтаксична помилка в команді '{command}'")
                 sys.exit(1)
@@ -53,7 +54,8 @@ def execute(line):
             if var not in memory:
                 print(f"Помилка: змінна '{var}' не знайдена")
                 sys.exit(1)
-            print(memory[var])
+            print(f"{var} = {memory[var]}")
+            # print(memory[var])
 
         case "COPY":
             if len(tokens) != 3:
@@ -93,7 +95,7 @@ def execute(line):
             print(f"Синтаксична помилка: невідома команда '{tokens[0]}'")
             sys.exit(1)
 
-def run(filename):
+def run(filename: str):
     try:
         with open(filename, 'r') as file:
             for line_num, line in enumerate(file, start=1):
@@ -107,4 +109,4 @@ def run(filename):
         sys.exit(1)
 
 if __name__ == "__main__":
-    run("cd.txt")
+    run("Vr/cd.txt")
