@@ -27,11 +27,10 @@ def add_token(value: str) -> None:
     
     tokens.append(Token(token_type, value))
 
-program = ""
-
 with open("program.txt", "r") as file:
-    program = file.read()
+    program_unformatted = file.read()
 
+program = program_unformatted
 program = program.replace(" ", "")
 program = program.replace("\n", "")
 
