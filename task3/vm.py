@@ -1,9 +1,29 @@
 import sys
 import re
 
+class IntReference:
+    def __init__(self, value: int):
+        self.value = value
+
+class ErrorMessage:
+    VAR_NOT_INIT = "variable '{}' is not initialized"
+    VAR_NOT_FOUND = "variable '{}' is not found"
+    VAR_NOT_STORED = "result must be stored in a variable"
+    COMMAND_UNKNOWN = "unknown command '{}'"
+    OPERAND_INVALID = "invalid operand '{}'"
+    SYNTAX_FAILURE = "syntax failure in '{}'"
+    ARITHMETIC_SYNTAX_FAILURE = "syntax failure in arithmetic operation '{}'"
+    NUMBER_EXPECTED = "expected a number"
+    ZERO_DIVISION = "division by zero"
+    FILE_NOT_FOUND = "file '{}' not found"
+    WRONG_LINE = "wrong line goto"
+    RUNTIME_ERROR = "runtime error, infinite loop"
+
+    @classmethod
+    def print(cls, message: str, target: str = ""):
+        print(f"Error: {message.format(target)}", end=" ")
+
 memory = {}
-labels = {}
-lines = []
 
 VAR_PATTERN = re.compile(r'^(?:[a-zA-Z]+|t\d+)$')
 FLOAT_PATTERN = re.compile(r'^-?(\d+\.?\d*|\.\d+)$')
@@ -18,30 +38,23 @@ def get_value(s: str):
     if is_number(s):
         return float(s)
     elif is_variable(s):
-        if s in memory:
-            return memory[s]
-        else:
-            print(f"Error: variable '{s}' is not initialized.")
+        if not s in memory:
+            ErrorMessage.print(ErrorMessage.VAR_NOT_INIT, s)
             sys.exit(1)
+        return memory[s]
     else:
-        print(f"Syntax error: invalid operand '{s}'")
+        ErrorMessage.print(ErrorMessage.OPERAND_INVALID, s)
         sys.exit(1)
 
-def preprocess():
-    """Build label map before execution."""
-    for i, line in enumerate(lines):
-        line = line.strip()
-        if line.endswith(':'):
-            label = line[:-1]
-            if not is_variable(label):
-                print(f"Syntax error: invalid label name '{label}'")
-                sys.exit(1)
-            labels[label] = i
-
-def execute_line(index: int):
-    line = lines[index].strip()
-    if not line or line.endswith(':'):
-        return index + 1
+def execute(lines: list[str], index: IntReference):
+    if index.value < 0 or index.value > len(lines) - 1:
+        ErrorMessage.print(ErrorMessage.WRONG_LINE)
+        sys.exit(1)
+    
+    line = lines[index.value]
+    
+    if not line:
+        return
 
     tokens = line.split()
     command = tokens[0].upper()
@@ -49,44 +62,45 @@ def execute_line(index: int):
     match command:
         case "READ":
             if len(tokens) != 2 or not is_variable(tokens[1]):
-                print(f"Syntax error in command '{command}'")
+                ErrorMessage.print(ErrorMessage.SYNTAX_FAILURE, command)
                 sys.exit(1)
             var = tokens[1]
             print(f"{var} = ", end="")
             val = str(input())
             if not is_number(val):
-                print("Error: expected a number.")
+                ErrorMessage.print(ErrorMessage.NUMBER_EXPECTED)
                 sys.exit(1)
             memory[var] = float(val)
 
         case "WRITE":
             if len(tokens) != 2 or not is_variable(tokens[1]):
-                print(f"Syntax error in command '{command}'")
+                ErrorMessage.print(ErrorMessage.SYNTAX_FAILURE, command)
                 sys.exit(1)
             var = tokens[1]
             if var not in memory:
-                print(f"Error: variable '{var}' is not found.")
+                ErrorMessage.print(ErrorMessage.VAR_NOT_FOUND, var)
                 sys.exit(1)
             print(f"{var} = {memory[var]}")
+            # print(memory[var])
 
         case "COPY":
             if len(tokens) != 3:
-                print(f"Syntax error in command '{command}'")
+                ErrorMessage.print(ErrorMessage.SYNTAX_FAILURE, command)
                 sys.exit(1)
             src, dst = tokens[1], tokens[2]
             if not is_variable(dst):
-                print("Error: invalid variable name.")
+                ErrorMessage.print(ErrorMessage.VAR_NOT_FOUND, dst)
                 sys.exit(1)
             memory[dst] = get_value(src)
 
-        case "ADD" | "SUB" | "MUL" | "DIV":
+        case  "ADD" | "SUB" | "MUL" | "DIV":
             if len(tokens) != 4:
-                print(f"Syntax error in arithmetic operation '{command}'")
+                ErrorMessage.print(ErrorMessage.ARITHMETIC_SYNTAX_FAILURE, command)
                 sys.exit(1)
             _, left, right, dst = tokens
             if not is_variable(dst):
-                print("Error: result must be stored in a variable.")
-                sys.exit(1)
+                ErrorMessage.print(ErrorMessage.VAR_NOT_STORED)
+                sys.exit(1) 
 
             lval = get_value(left)
             rval = get_value(right)
@@ -99,65 +113,77 @@ def execute_line(index: int):
                 memory[dst] = lval * rval
             elif command == 'DIV':
                 if rval == 0:
-                    print("Error: division by zero.")
+                    ErrorMessage.print(ErrorMessage.ZERO_DIVISION)
                     sys.exit(1)
                 memory[dst] = lval / rval
 
         case "GOTO":
             if len(tokens) != 2:
-                print("Syntax error: GOTO requires one label.")
+                ErrorMessage.print(ErrorMessage.SYNTAX_FAILURE, command)
                 sys.exit(1)
-            label = tokens[1]
-            if label not in labels:
-                print(f"Error: label '{label}' not found.")
+            
+            line = int(get_value(tokens[1]))
+            if line == index.value:
+                ErrorMessage.print(ErrorMessage.RUNTIME_ERROR)
                 sys.exit(1)
-            return labels[label]
+            index.value = line
+
+            return
 
         case "GOTOIF":
             if len(tokens) != 3:
-                print("Syntax error: GOTOIF requires a condition and label.")
+                ErrorMessage.print(ErrorMessage.SYNTAX_FAILURE, command)
                 sys.exit(1)
-            cond, label = tokens[1], tokens[2]
-            if get_value(cond):
-                if label not in labels:
-                    print(f"Error: label '{label}' not found.")
+            
+            val = get_value(tokens[1])
+            line = int(get_value(tokens[2]))
+
+            if val > 0:
+                if line == index.value:
+                    ErrorMessage.print(ErrorMessage.RUNTIME_ERROR)
                     sys.exit(1)
-                return labels[label]
+                index.value = line
+            
+            return
 
         case "GOTOIFNOT":
             if len(tokens) != 3:
-                print("Syntax error: GOTOIFNOT requires a condition and label.")
+                ErrorMessage.print(ErrorMessage.SYNTAX_FAILURE, command)
                 sys.exit(1)
-            cond, label = tokens[1], tokens[2]
-            if not get_value(cond):
-                if label not in labels:
-                    print(f"Error: label '{label}' not found.")
+            
+            val = get_value(tokens[1])
+            line = int(get_value(tokens[2]))
+
+            if not val > 0:
+                if line == index.value:
+                    ErrorMessage.print(ErrorMessage.RUNTIME_ERROR)
                     sys.exit(1)
-                return labels[label]
+                index.value = line
+            
+            return
 
         case _:
-            print(f"Syntax error: unknown command '{tokens[0]}'")
+            ErrorMessage.print(ErrorMessage.COMMAND_UNKNOWN, tokens[0])
             sys.exit(1)
-
-    return index + 1
+        
+    index.value += 1
 
 def run(filename: str):
-    global lines
+    lines = list[str]()
+    i = IntReference(0)
     try:
         with open(filename, 'r') as file:
-            lines = file.readlines()
+            lines = file.read().split(sep="\n")
+            while i.value < len(lines):
+                try:
+                    execute(lines, i)
+                except SystemExit:
+                    print(f"(line {i.value + 1}).")
+                    sys.exit(1)
+                    
     except FileNotFoundError:
-        print(f"Error: file '{filename}' not found.")
+        ErrorMessage.print(ErrorMessage.FILE_NOT_FOUND, filename)
         sys.exit(1)
 
-    preprocess()
-    i = 0
-    while i < len(lines):
-        try:
-            i = execute_line(i)
-        except SystemExit:
-            print(f"(line {i + 1})")
-            sys.exit(1)
-
 if __name__ == "__main__":
-    run("Vr/cd.txt")
+    run("cd.txt")

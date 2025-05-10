@@ -9,14 +9,3 @@ WRITE sum
 WRITE t2
 WRITE t3
 WRITE t4
-
-READ x
-COPY x t5
-GOTOIF t5 skip_zero
-WRITE x
-GOTO end
-
-skip_zero:
-WRITE t5
-
-end:
