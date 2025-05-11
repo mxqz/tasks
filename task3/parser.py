@@ -135,7 +135,8 @@ def handleCommand():
     if current != Token(TokenType.SEPARATOR, ";"):
         raise SyntaxError("Expected ';'")
     
-    commands.append(command)
+    if command:
+        commands.append(command)
 
 
 def handleExpression(res = ""):
