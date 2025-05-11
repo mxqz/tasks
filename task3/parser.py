@@ -1,15 +1,16 @@
 import sys
+import json
 from tokens import *
 from tokenizer import tokens
 from int_reference import IntReference
 
-token_values = [token.value for token in tokens]
+paths: dict = json.load(open("config.json", "r"))
+token_values: list[str] = [token.value for token in tokens]
+commands: list[str] = list[str]()
+temp_count: IntReference = IntReference(0)
+op: list[str] = list[str]()
+arg: list[str] = list[str]()
 tokens.reverse()
-commands = list[str]()
-temp_count = IntReference(0)
-op = list[str]()
-arg = list[str]()
-
 
 def priority(operator: str) -> int:
     power: int
@@ -49,16 +50,18 @@ def generateCommand(res = ""):
         case _:
             raise ValueError(f"Invalid operator {opr}")
     
-    if not res:
+    if len(op) != 1 or not res:
         res = f"t{temp_count.value}"
         temp_count.value += 1
     
     arg.append(res)
-    commands.append(f"{name} {lhs} {rhs} {res}")
+    command = f"{name} {lhs} {rhs} {res}"
+    commands.append(command)
        
 
 
 def handleBlock():
+    internal = len(commands)
     while tokens:
         current = tokens[-1]
         match current.type:
@@ -69,7 +72,7 @@ def handleBlock():
                     case "if" | "ifnot" | "while" | "whilenot":
                         handleOperatorBlock()
             case TokenType.SEPARATOR:
-                if current.value == "}":
+                if current.value == "}" and internal:
                     return
                 raise SyntaxError("Expected command, identifier or block statement")
             case TokenType.OPERATOR | TokenType.NUMBER:
@@ -142,7 +145,6 @@ def handleCommand():
 def handleExpression(res = ""):
     while tokens:
         token = tokens[-1]
-        
         if token.type in {TokenType.IDENTIFIER, TokenType.NUMBER}:
             arg.append(token.value)
         elif token.type == TokenType.OPERATOR and token.value in ARITHMETICS:
@@ -151,13 +153,13 @@ def handleExpression(res = ""):
                     break
                 if priority(op[-1]) < priority(token.value):
                     break
-                generateCommand(res if len(op) == 1 else "")
+                generateCommand(res)
             op.append(token.value)
         elif token.value == "(":
             op.append(token.value)
         elif token.value == ")":
             while op[-1] != "(":
-                generateCommand(res if len(op) == 1 else "")
+                generateCommand(res)
             if not op:
                 raise SyntaxError("Invalid expression")
             if op[-1] != "(":
@@ -171,7 +173,9 @@ def handleExpression(res = ""):
     while op:
         if op[-1] in {"(", ")"}:
             raise SyntaxError("Invalid expression")
-        generateCommand(res if len(op) == 1 else "")
+        generateCommand(res)
+    
+    return res if res else f"t{temp_count.value - 1}"
 
 
 def handleOperatorBlock():
@@ -180,11 +184,12 @@ def handleOperatorBlock():
     if not tokens or tokens.pop() != Token(TokenType.SEPARATOR, "["):
         raise SyntaxError("Expected '[' to start a statement block,")
 
-    begin = len(commands) - 1
+    begin = len(commands)
 
-    handleExpression()
+    var = handleExpression()
 
-    var = commands[-1].split()[-1]
+    position = len(commands)
+    
     command = ""
 
     match current.value:
@@ -205,6 +210,8 @@ def handleOperatorBlock():
     if not tokens or tokens.pop() != Token(TokenType.SEPARATOR, "{"):
         raise SyntaxError("Expected '{' to start a block body")
     
+    commands.append("")
+
     handleBlock()
 
     end = len(commands)
@@ -212,20 +219,17 @@ def handleOperatorBlock():
     if not tokens or tokens.pop() != Token(TokenType.SEPARATOR, "}"):
         raise SyntaxError("Expected '}' to end a block body")
     
-    commands.append(f"{command} {var} {end}")
+    commands[position] = f"{command} {var} {end}"
     
     if current.value in ["while", "whilenot"]:
         commands.append(f"GOTO {begin}")
         
 
 if __name__ == "__main__":    
+    open(paths.get("path_raw"), "w").close()
     try:
         handleBlock()
-    except SyntaxError as e:
-        for command in commands:
-            print(command)
-        print()
-        
+    except SyntaxError as e:       
         num = len(token_values) - len(tokens)
         spaces = 0
         
@@ -238,5 +242,6 @@ if __name__ == "__main__":
         
         sys.exit(0)
     
-    for command in commands:
-        print(command)
+    with open(paths.get("path_raw"), "w") as file:
+        for command in commands:
+            file.write(command + "\n")

@@ -1,0 +1,11 @@
+READ a
+READ b
+ADD a b t0
+MUL a t0 t1
+SUB a 10.5 t2
+GOTOIFNOT t2 10
+GOTOIFNOT t2 9
+MUL c b t3
+SUB a 1 t4
+GOTO 6
+WRITE c

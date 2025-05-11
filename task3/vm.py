@@ -1,6 +1,9 @@
 import sys
 import re
+import json
 from int_reference import IntReference
+
+paths: dict = json.load(open("config.json", "r"))
 
 class ErrorMessage:
     VAR_NOT_INIT = "variable '{}' is not initialized"
@@ -20,7 +23,7 @@ class ErrorMessage:
     def print(cls, message: str, target: str = ""):
         print(f"Error: {message.format(target)}", end=" ")
 
-memory = {}
+memory: dict = {}
 
 VAR_PATTERN = re.compile(r'^(?:[a-zA-Z]+|t\d+)$')
 FLOAT_PATTERN = re.compile(r'^-?(\d+\.?\d*|\.\d+)$')
@@ -44,13 +47,17 @@ def get_value(s: str):
         sys.exit(1)
 
 def execute(lines: list[str], index: IntReference):
-    if index.value < 0 or index.value > len(lines) - 1:
+    if index.value < 0 or index.value > len(lines):
         ErrorMessage.print(ErrorMessage.WRONG_LINE)
         sys.exit(1)
+    
+    # if index.value == len(lines):
+    #     return
     
     line = lines[index.value]
     
     if not line:
+        index.value += 1
         return
 
     tokens = line.split()
@@ -183,4 +190,4 @@ def run(filename: str):
         sys.exit(1)
 
 if __name__ == "__main__":
-    run("cd.txt")
+    run(paths.get("path_raw"))
