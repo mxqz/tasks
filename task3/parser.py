@@ -125,7 +125,7 @@ def handleCommand():
                 except:
                     raise SyntaxError("Expected an identifier, found end of file instead")
                 
-                if current.type != TokenType.IDENTIFIER:
+                if not current.type in {TokenType.IDENTIFIER, TokenType.NUMBER}:
                     raise SyntaxError("Expected an identifier")
                     
                 command = f"WRITE {current.value}"
@@ -143,6 +143,9 @@ def handleCommand():
 
 
 def handleExpression(res = ""):
+    arg.clear()
+    op.clear()
+    
     while tokens:
         token = tokens[-1]
         if token.type in {TokenType.IDENTIFIER, TokenType.NUMBER}:
@@ -170,19 +173,28 @@ def handleExpression(res = ""):
         
         tokens.pop()
     
+    if len(arg) == 1 and len(op) == 0:
+        return arg[0]
+
     while op:
         if op[-1] in {"(", ")"}:
             raise SyntaxError("Invalid expression")
         generateCommand(res)
     
-    return res if res else f"t{temp_count.value - 1}"
+    if res:
+        return res
+
+    if temp_count.value < 1:
+        raise SyntaxError("Invalid expression")
+
+    return f"t{temp_count.value - 1}"
 
 
 def handleOperatorBlock():
     current = tokens.pop()
     
     if not tokens or tokens.pop() != Token(TokenType.SEPARATOR, "["):
-        raise SyntaxError("Expected '[' to start a statement block,")
+        raise SyntaxError("Expected '[' to start a statement block")
 
     begin = len(commands)
 

@@ -46,6 +46,23 @@ def get_value(s: str):
         ErrorMessage.print(ErrorMessage.OPERAND_INVALID, s)
         sys.exit(1)
 
+def validate_tokens(command: str, tokens: list[str], expected_len: int, message: str = ErrorMessage.SYNTAX_FAILURE):
+    if len(tokens) != expected_len:
+        ErrorMessage.print(message, command)
+        sys.exit(1)
+
+def go_to_line(line: int, current_index: IntReference):
+    if line == current_index.value:
+        ErrorMessage.print(ErrorMessage.RUNTIME_ERROR)
+        sys.exit(1)
+    current_index.value = line
+        
+
+def validate_variable(var: str):
+    if not is_variable(var):
+        ErrorMessage.print(ErrorMessage.VAR_NOT_FOUND, var)
+        sys.exit(1)
+
 def execute(lines: list[str], index: IntReference):
     if index.value < 0 or index.value > len(lines):
         ErrorMessage.print(ErrorMessage.WRONG_LINE)
@@ -77,34 +94,29 @@ def execute(lines: list[str], index: IntReference):
             memory[var] = float(val)
 
         case "WRITE":
-            if len(tokens) != 2 or not is_variable(tokens[1]):
+            validate_tokens(command, tokens, 2)
+            var = tokens[1]
+            if is_variable(var):
+                if var not in memory:
+                    ErrorMessage.print(ErrorMessage.VAR_NOT_FOUND, var)
+                    sys.exit(1)
+                print(f"{var} = {memory[var]}")
+            elif is_number(var):
+                print(var)
+            else:
                 ErrorMessage.print(ErrorMessage.SYNTAX_FAILURE, command)
                 sys.exit(1)
-            var = tokens[1]
-            if var not in memory:
-                ErrorMessage.print(ErrorMessage.VAR_NOT_FOUND, var)
-                sys.exit(1)
-            print(f"{var} = {memory[var]}")
-            # print(memory[var])
 
         case "COPY":
-            if len(tokens) != 3:
-                ErrorMessage.print(ErrorMessage.SYNTAX_FAILURE, command)
-                sys.exit(1)
+            validate_tokens(command, tokens, 3)
             src, dst = tokens[1], tokens[2]
-            if not is_variable(dst):
-                ErrorMessage.print(ErrorMessage.VAR_NOT_FOUND, dst)
-                sys.exit(1)
+            validate_variable(dst)
             memory[dst] = get_value(src)
 
         case  "ADD" | "SUB" | "MUL" | "DIV":
-            if len(tokens) != 4:
-                ErrorMessage.print(ErrorMessage.ARITHMETIC_SYNTAX_FAILURE, command)
-                sys.exit(1)
+            validate_tokens(command, tokens, 4, ErrorMessage.ARITHMETIC_SYNTAX_FAILURE)
             _, left, right, dst = tokens
-            if not is_variable(dst):
-                ErrorMessage.print(ErrorMessage.VAR_NOT_STORED)
-                sys.exit(1) 
+            validate_variable(dst)
 
             lval = get_value(left)
             rval = get_value(right)
@@ -122,49 +134,30 @@ def execute(lines: list[str], index: IntReference):
                 memory[dst] = lval / rval
 
         case "GOTO":
-            if len(tokens) != 2:
-                ErrorMessage.print(ErrorMessage.SYNTAX_FAILURE, command)
-                sys.exit(1)
-            
+            validate_tokens(command, tokens, 2)
             line = int(get_value(tokens[1]))
-            if line == index.value:
-                ErrorMessage.print(ErrorMessage.RUNTIME_ERROR)
-                sys.exit(1)
-            index.value = line
-
+            go_to_line(line, index)
             return
 
         case "GOTOIF":
-            if len(tokens) != 3:
-                ErrorMessage.print(ErrorMessage.SYNTAX_FAILURE, command)
-                sys.exit(1)
+            validate_tokens(command, tokens, 3)
             
             val = get_value(tokens[1])
             line = int(get_value(tokens[2]))
 
             if val > 0:
-                if line == index.value:
-                    ErrorMessage.print(ErrorMessage.RUNTIME_ERROR)
-                    sys.exit(1)
-                index.value = line
-            
-            return
+                go_to_line(line, index)
+                return 
 
         case "GOTOIFNOT":
-            if len(tokens) != 3:
-                ErrorMessage.print(ErrorMessage.SYNTAX_FAILURE, command)
-                sys.exit(1)
+            validate_tokens(command, tokens, 3)
             
             val = get_value(tokens[1])
             line = int(get_value(tokens[2]))
 
             if not val > 0:
-                if line == index.value:
-                    ErrorMessage.print(ErrorMessage.RUNTIME_ERROR)
-                    sys.exit(1)
-                index.value = line
-            
-            return
+                go_to_line(line, index)
+                return
 
         case _:
             ErrorMessage.print(ErrorMessage.COMMAND_UNKNOWN, tokens[0])
@@ -176,7 +169,7 @@ def run(filename: str):
     lines = list[str]()
     i = IntReference(0)
     try:
-        with open(filename, 'r') as file:
+        with open(filename, "r") as file:
             lines = file.read().split(sep="\n")
             while i.value < len(lines):
                 try:
