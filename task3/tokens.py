@@ -4,6 +4,7 @@ class TokenType:
     SEPARATOR = "SEPARATOR"
     IDENTIFIER = "IDENTIFIER"
     NUMBER = "NUMBER"
+    UNKNOWN = "UNKNOWN"
 
 class Token:
     def __init__(self, type: str, value: str):
@@ -23,3 +24,4 @@ class Token:
 KEYWORDS = {"read", "write", "if", "ifnot", "while", "whilenot"}
 OPERATORS = {"+", "-", "*", "/", "=", ">"}
 SEPARATORS = {";", "(", ")", "{", "}", "[", "]"}
+ARITHMETICS = {"+", "-", "*", "/", "(", ")"}

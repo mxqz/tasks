@@ -1,3 +1,4 @@
+import sys
 from tokens import *
 
 tokens = list[Token]()
@@ -21,7 +22,7 @@ def add_token(value: str) -> None:
         try:
             _ = float(value)
         except ValueError:
-            raise ValueError(f"Uknown token: {value}")
+            token_type = TokenType.UNKNOWN
         else:
             token_type = TokenType.NUMBER
     

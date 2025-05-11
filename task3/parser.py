@@ -1,10 +1,18 @@
 import sys
 from tokens import *
-from tokenizer import tokens, program, program_unformatted
+from tokenizer import tokens
+from int_reference import IntReference
 
-tokens_original = [token.value for token in tokens]
+token_values = [token.value for token in tokens]
 tokens.reverse()
+sentence = []
 commands = list[str]()
+temp_count = IntReference(0)
+
+
+def generateCommand():
+    pass
+
 
 def handleBlock():
     while tokens:
@@ -20,25 +28,34 @@ def handleBlock():
                 raise SyntaxError("Expected command, identifier or block statement")
             case TokenType.IDENTIFIER:
                 handleCommand()
+            case TokenType.UNKNOWN:
+                tokens.pop()
+                raise SyntaxError("Token unknown")
+
 
 def handleCommand():
     command = ""
     
-    current = tokens.pop()
-    
+    if tokens[-1].type == TokenType.IDENTIFIER:
+        res = tokens.pop().value
+        
+        if not tokens:
+            raise SyntaxError("Expected '=' operator, found end of file instead")
+        if tokens.pop() != Token(TokenType.OPERATOR, "="):
+            raise SyntaxError("Expected '=' operator")
+
+        handleExpression(res)
+
     try:
+        current = tokens.pop()
         operator = tokens.pop()
     except:
-        if current.type == TokenType.KEYWORD:
-            raise SyntaxError("Expected '>' operator, found end of file instead")
-        else:
-            raise SyntaxError("Expected '=' operator, found end of file instead")
+        raise SyntaxError("Expected '>' operator, found end of file instead")
     else:
-        if current.type == TokenType.KEYWORD and operator != Token(TokenType.OPERATOR, ">"):
+        if operator != Token(TokenType.OPERATOR, ">"):
             raise SyntaxError("Expected '>' operator")
-        elif current.type == TokenType.IDENTIFIER and operator != Token(TokenType.OPERATOR, "="):
-            raise SyntaxError("Expected '=' operator")
-        
+    
+    
         
     match current.value:
         case "read":
@@ -59,24 +76,71 @@ def handleCommand():
                 raise SyntaxError("Expected an identifier, found end of file instead")
             
             if current.type != TokenType.IDENTIFIER:
-                print("Expected an identifier")
+                raise SyntaxError("Expected an identifier")
             
             command = f"WRITE {current.value}"
         
         case _:
-            handleExpression()
-            command = f"COPY {1} {2}"
-        
+            raise SyntaxError("Unexpected command")
+
     current = tokens.pop()
 
     if current != Token(TokenType.SEPARATOR, ";"):
         raise SyntaxError("Expected ';'")
     
     commands.append(command)
-            
 
-def handleExpression():
-    pass
+
+def handleExpression(res = ""):
+    tokens.pop()
+    raise SyntaxError("Expression")
+
+    while tokens:
+        token = tokens.pop()
+        if token.type == TokenType.IDENTIFIER or token.type == TokenType.NUMBER:
+            sentence.append(token.value)
+        elif token.value in ARITHMETICS:
+            sentence.append(token.value)
+        else:
+            break
+    
+    name = ""
+    lhs = ""
+    rhs = ""
+
+    if not res:
+        res = f"t{temp_count.value}"
+        temp_count.value += 1
+    
+    while sentence:
+        obj = sentence.pop()
+        match obj:
+            case "+":
+                name = "ADD"
+                lhs = handleExpression()
+                rhs = handleExpression()
+            case "-":
+                name = "SUB"
+                lhs = handleExpression()
+                rhs = handleExpression()
+                
+            case "*":
+                name = "MUL"
+                lhs = handleExpression()
+                rhs = handleExpression()
+            case "/":
+                name = "DIV"
+                lhs = handleExpression()
+                rhs = handleExpression()
+            case "(":
+                return handleExpression()
+            case ")":
+                commands.append(f"{name} {lhs} {rhs} {res}")
+            case _:
+                return obj
+    
+    return res
+
 
 def handleOperatorBlock():
     current = tokens.pop()
@@ -90,6 +154,7 @@ def handleOperatorBlock():
         raise SyntaxError("Expected '[]' statement block")
 
     handleExpression()
+    command = ""
 
     match current.value:
         case "if":
@@ -100,19 +165,21 @@ def handleOperatorBlock():
             pass
         case "whilenot":
             pass
+    
+    commands.append(command)
         
 
 if __name__ == "__main__":    
     try:
         handleBlock()
     except SyntaxError as e:
-        num = len(tokens_original) - len(tokens)
+        num = len(token_values) - len(tokens)
         spaces = 0
         
-        for i in range(num):
-            spaces += len(tokens_original[i]) + 1
-        
-        print(*tokens_original, sep=" ")
+        for token in token_values[:num - 1]:
+            spaces += len(token) + 1
+
+        print(*token_values, sep=" ")
         print(" " * spaces + "^")
         print(f"{str(e)} (pos {num}).")
         

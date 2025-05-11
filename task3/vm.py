@@ -1,9 +1,6 @@
 import sys
 import re
-
-class IntReference:
-    def __init__(self, value: int):
-        self.value = value
+from int_reference import IntReference
 
 class ErrorMessage:
     VAR_NOT_INIT = "variable '{}' is not initialized"
