@@ -50,7 +50,7 @@ def generateCommand(res = ""):
         case _:
             raise ValueError(f"Invalid operator {opr}")
     
-    if len(op) != 1 or not res:
+    if not res:
         res = f"t{temp_count.value}"
         temp_count.value += 1
     

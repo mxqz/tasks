@@ -1,11 +1,11 @@
 READ a
 READ b
-ADD a b t0
-MUL a t0 t1
-SUB a 10.5 t2
-GOTOIFNOT t2 10
-GOTOIFNOT t2 9
-MUL c b t3
-SUB a 1 t4
+ADD a b c
+MUL a c c
+SUB a 10.5 t0
+GOTOIFNOT t0 10
+GOTOIFNOT t0 9
+MUL c b c
+SUB a 1 a
 GOTO 6
 WRITE c
