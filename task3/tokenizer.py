@@ -1,10 +1,8 @@
-import sys
 from tokens import *
 
 tokens = list[Token]()
 
 def add_token(value: str) -> None:
-    """Token type evaluation function"""
     if not value:
         return
 

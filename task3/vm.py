@@ -68,9 +68,6 @@ def execute(lines: list[str], index: IntReference):
         ErrorMessage.print(ErrorMessage.WRONG_LINE)
         sys.exit(1)
     
-    # if index.value == len(lines):
-    #     return
-    
     line = lines[index.value]
     
     if not line:

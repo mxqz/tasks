@@ -57,7 +57,6 @@ def generateCommand(res = ""):
     arg.append(res)
     command = f"{name} {lhs} {rhs} {res}"
     commands.append(command)
-       
 
 
 def handleBlock():
