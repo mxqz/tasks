@@ -103,38 +103,37 @@ def handleCommand():
             command = f"COPY {var} {res}"
     else:
         current = tokens.pop()
+        
         if not tokens or tokens.pop() != Token(TokenType.OPERATOR, ">"):
             raise SyntaxError("Expected '>' operator")
-            
+
         match current.value:
             case "read":
-                try:
-                    current = tokens.pop()
-                except:
-                    raise SyntaxError("Expected an identifier, found end of file instead")
-                
-                if current.type != TokenType.IDENTIFIER:
+                if not tokens or tokens.pop().type != TokenType.IDENTIFIER:
                     raise SyntaxError("Expected an identifier")
                 
                 command = f"READ {current.value}"
                 
             case "write":
-                try:
-                    current = tokens.pop()
-                except:
-                    raise SyntaxError("Expected an identifier, found end of file instead")
+                if not tokens:
+                    raise SyntaxError("Expected an expression")
+
+                current = tokens[-1]
+                dst = ""
+                if current == Token(TokenType.SEPARATOR, "("):
+                    dst = handleExpression()
+                elif current.type in {TokenType.IDENTIFIER, TokenType.NUMBER}:
+                    tokens.pop()
+                    dst = current.value
+                else:
+                    raise SyntaxError("Expected an expression")
                 
-                if not current.type in {TokenType.IDENTIFIER, TokenType.NUMBER}:
-                    raise SyntaxError("Expected an identifier")
-                    
-                command = f"WRITE {current.value}"
+                command = f"WRITE {dst}"
             
             case _:
                 raise SyntaxError("Unexpected command")
 
-    current = tokens.pop()
-
-    if current != Token(TokenType.SEPARATOR, ";"):
+    if not tokens or tokens.pop() != Token(TokenType.SEPARATOR, ";"):
         raise SyntaxError("Expected ';'")
     
     if command:
