@@ -226,15 +226,15 @@ def handleOperatorBlock():
 
     handleBlock()
 
-    end = len(commands)
-
     if not tokens or tokens.pop() != Token(TokenType.SEPARATOR, "}"):
         raise SyntaxError("Expected '}' to end a block body")
     
-    commands[position] = f"{command} {var} {end}"
-    
     if current.value in ["while", "whilenot"]:
         commands.append(f"GOTO {begin}")
+
+    end = len(commands)
+
+    commands[position] = f"{command} {var} {end}"
         
 
 if __name__ == "__main__":    
