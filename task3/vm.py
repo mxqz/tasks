@@ -27,12 +27,16 @@ memory: dict = {}
 
 VAR_PATTERN = re.compile(r'^(?:[a-zA-Z]+|t\d+)$')
 FLOAT_PATTERN = re.compile(r'^-?(\d+\.?\d*|\.\d+)$')
+TEMP_PATTERN = re.compile(r'^t\d+$')
 
 def is_variable(s: str):
     return bool(VAR_PATTERN.fullmatch(s))
 
 def is_number(s: str):
     return bool(FLOAT_PATTERN.fullmatch(s))
+
+def is_temp(s: str):
+    return bool(TEMP_PATTERN.fullmatch(s))
 
 def get_value(s: str):
     if is_number(s):
@@ -97,7 +101,9 @@ def execute(lines: list[str], index: IntReference):
                 if var not in memory:
                     ErrorMessage.print(ErrorMessage.VAR_NOT_FOUND, var)
                     sys.exit(1)
-                print(f"{var} = {memory[var]}")
+                if not is_temp(var):
+                    print(f"{var} = ", end="")
+                print(f"{memory[var]}")
             elif is_number(var):
                 print(var)
             else:

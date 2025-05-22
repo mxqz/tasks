@@ -109,9 +109,14 @@ def handleCommand():
 
         match current.value:
             case "read":
-                if not tokens or tokens.pop().type != TokenType.IDENTIFIER:
+                if not tokens:
                     raise SyntaxError("Expected an identifier")
                 
+                current = tokens.pop()
+                
+                if not tokens or current.type != TokenType.IDENTIFIER:
+                    raise SyntaxError("Expected an identifier")
+
                 command = f"READ {current.value}"
                 
             case "write":
